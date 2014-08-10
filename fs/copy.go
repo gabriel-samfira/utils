@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 )
 
 // Copy recursively copies the file, directory or symbolic link at src
@@ -60,10 +61,13 @@ func copyFile(src, dst string, mode os.FileMode) error {
 		return err
 	}
 	defer dstf.Close()
-	// Make the actual permissions match the source permissions
-	// even in the presence of umask.
-	if err := dstf.Chmod(mode.Perm()); err != nil {
-		return err
+	// Chmod() in os.FileMode is not implemented on Windows
+	if runtime.GOOS != "windows" {
+		// Make the actual permissions match the source permissions
+		// even in the presence of umask.
+		if err := dstf.Chmod(mode.Perm()); err != nil {
+			return err
+		}
 	}
 	if _, err := io.Copy(dstf, srcf); err != nil {
 		return fmt.Errorf("cannot copy %q to %q: %v", src, dst, err)
