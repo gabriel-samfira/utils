@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"fmt"
 	"strings"
 	"syscall"
 
@@ -43,11 +44,20 @@ func MergeEnvironment(env []string) []string {
 	if env == nil {
 		return nil
 	}
-	m := make(map[string]string)
+	m := map[string]string{}
 	var tmpEnv []string
 	for _, val := range os.Environ() {
-		varSplit := strings.SplitN(val, "=", 2)
-		m[varSplit[0]] = varSplit[1]
+		splitAfter := 2
+		if strings.HasPrefix(val, "=") {
+			splitAfter = 3
+		}
+		varSplit := strings.SplitN(val, "=", splitAfter)
+		if splitAfter == 3 {
+			m["="+varSplit[1]] = varSplit[2]
+		}else{
+			m[varSplit[0]] = varSplit[1]
+		}
+		fmt.Printf(">>>before: %v --> %v\r\n", varSplit[0], varSplit[1])
 	}
 
 	for _, val := range env {
@@ -56,6 +66,7 @@ func MergeEnvironment(env []string) []string {
 	}
 
 	for key, val := range m {
+		fmt.Printf(">>>after: %v --> %v\r\n", key, val)
 		tmpEnv = append(tmpEnv, key+"="+val)
 	}
 
