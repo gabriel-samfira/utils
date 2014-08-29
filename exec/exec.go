@@ -34,12 +34,12 @@ type ExecResponse struct {
 	Stderr []byte
 }
 
-// mergeEnvironment takes in a string array representing the desired environment
+// MergeEnvironment takes in a string array representing the desired environment
 // and merges it with the current environment. On Windows, clearing the environment,
 // or having missing environment variables, may lead to standard go packages not working
 // (os.TempDir relies on $env:TEMP), and powershell erroring out
 // Currently this function is only used for windows
-func mergeEnvironment(env []string) []string {
+func MergeEnvironment(env []string) []string {
 	if env == nil {
 		return nil
 	}
@@ -92,7 +92,7 @@ func shellAndArgs() (string, []string) {
 // error.
 func RunCommands(run RunParams) (*ExecResponse, error) {
 	if runtime.GOOS == "windows" {
-		run.Environment = mergeEnvironment(run.Environment)
+		run.Environment = MergeEnvironment(run.Environment)
 	}
 	shell, args := shellAndArgs()
 	ps := exec.Command(shell, args...)
